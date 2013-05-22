@@ -1,12 +1,12 @@
-
+п»ї
 
 #include <cv.h>
 #include <highgui.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-// сравнение объектов по моментам их контуров 
-//templ - образец, original - набор фигур
+// СЃСЂР°РІРЅРµРЅРёРµ РѕР±СЉРµРєС‚РѕРІ РїРѕ РјРѕРјРµРЅС‚Р°Рј РёС… РєРѕРЅС‚СѓСЂРѕРІ 
+//templ - РѕР±СЂР°Р·РµС†, original - РЅР°Р±РѕСЂ С„РёРіСѓСЂ
 void testMatch(IplImage* original, IplImage* templ) 
 {
         assert(original!=0);
@@ -24,14 +24,14 @@ void testMatch(IplImage* original, IplImage* templ)
         IplImage* binT = cvCreateImage( cvGetSize(templ), 8, 1);
 				
 
-        // заведём цветные картинки
+        // Р·Р°РІРµРґС‘Рј С†РІРµС‚РЅС‹Рµ РєР°СЂС‚РёРЅРєРё
         IplImage* rgb = cvCreateImage(cvGetSize(original), 8, 3);
         cvConvertImage(src, rgb, CV_GRAY2BGR);
         IplImage* rgbT = cvCreateImage(cvGetSize(templ), 8, 3);
         cvConvertImage(templ, rgbT, CV_GRAY2BGR);
 
 
-        // получаем границы изображения и шаблона
+        // РїРѕР»СѓС‡Р°РµРј РіСЂР°РЅРёС†С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ Рё С€Р°Р±Р»РѕРЅР°
         cvCanny(src, binI, 50, 200);
         cvCanny(templ, binT, 50, 200);
 
@@ -40,78 +40,59 @@ void testMatch(IplImage* original, IplImage* templ)
 
 		cvDilate(binI, binI2); 
 		cvErode(binI2, binI);
-        // показываем
+        // РїРѕРєР°Р·С‹РІР°РµРј
         cvNamedWindow( "cannyI", 1 );
         cvShowImage( "cannyI", binI);
 
         cvNamedWindow( "cannyT", 1 );
 		cvShowImage( "cannyT", binT);
 
-        // для хранения контуров
+        // РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РєРѕРЅС‚СѓСЂРѕРІ
         CvMemStorage* storage = cvCreateMemStorage(0);
         CvSeq* contoursI=0, *contoursT=0;
 
-        // находим контуры изображения
+        // РЅР°С…РѕРґРёРј РєРѕРЅС‚СѓСЂС‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         int contoursCont = cvFindContours( binI, storage, &contoursI, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
 
-        // для отметки контуров
+        // РґР»СЏ РѕС‚РјРµС‚РєРё РєРѕРЅС‚СѓСЂРѕРІ
         CvFont font;
         cvInitFont(&font, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0);
         char buf[1024];
         int counter=0;
-
-		int i = 0;
-        // нарисуем контуры изображения
-        if(contoursI!=0){
-                for(CvSeq* seq0 = contoursI;seq0!=0;seq0 = seq0->h_next){
-                        // рисуем контур
-                        cvDrawContours(rgb, seq0, CV_RGB(255,216,0), CV_RGB(0,0,250), 0, 1, 8); 
-                }
-        }
-        // показываем
-        cvNamedWindow( "cont", 1 );
-        cvShowImage( "cont", rgb );
-
         cvConvertImage(src, rgb, CV_GRAY2BGR);
-
-        // находим контуры шаблона
+        // РЅР°С…РѕРґРёРј РєРѕРЅС‚СѓСЂС‹ С€Р°Р±Р»РѕРЅР°
         cvFindContours( binT, storage, &contoursT, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE , cvPoint(0,0));
-
         CvSeq* seqT=0;
         double perimT = 0;
 
-        if(contoursT!=0){
-                // находим самый длинный контур 
+		        if(contoursT!=0){
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 
                 for(CvSeq* seq0 = contoursT;seq0!=0;seq0 = seq0->h_next){
                         double perim = cvContourPerimeter(seq0);
                         if(perim>perimT){
                                 perimT = perim;
                                 seqT = seq0;
                         }
-                        // рисуем
-                        cvDrawContours(rgbT, seqT, CV_RGB(255,216,0), CV_RGB(0,0,250), 0, 1, 8); // рисуем контур
+                        // пїЅпїЅпїЅпїЅпїЅпїЅ
+                        cvDrawContours(rgbT, seqT, CV_RGB(255,216,0), CV_RGB(0,0,250), 0, 1, 8); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 }
         }
-        // покажем контур шаблона
-        cvDrawContours(rgbT, seqT, CV_RGB(52,201,36), CV_RGB(36,201,197), 0, 2, 8); // рисуем контур
-        cvNamedWindow( "contT", 1 );
-        cvShowImage( "contT", rgbT );
 
 
         CvSeq* seqM=0;
         double matchMax=1000;
-        // обходим контуры изображения 
+        // РѕР±С…РѕРґРёРј РєРѕРЅС‚СѓСЂС‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ 
         counter=0;
-		i=0; float rad; CvPoint2D32f point; 
+		int i=0; float rad; CvPoint2D32f point; 
         if(contoursI!=0){
-                // поиск лучшего совпадения контуров по их моментам 
+                // РїРѕРёСЃРє Р»СѓС‡С€РµРіРѕ СЃРѕРІРїР°РґРµРЅРёСЏ РєРѕРЅС‚СѓСЂРѕРІ РїРѕ РёС… РјРѕРјРµРЅС‚Р°Рј 
                 for(CvSeq* seq0 = contoursI;seq0!=0;seq0 = seq0->h_next){
                         double match0 = cvMatchShapes(seq0, seqT, 3);
                         if(match0<matchMax){
                                 matchMax = match0;
                                 seqM = seq0;
                         }
-						cvMinEnclosingCircle(seq0,&point,&rad); // получим окружность содержащую контур
+						cvMinEnclosingCircle(seq0,&point,&rad); // РїРѕР»СѓС‡РёРј РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РєРѕРЅС‚СѓСЂ
 
 						int     decimal,   sign;
 						char    *buffer;
@@ -125,10 +106,10 @@ void testMatch(IplImage* original, IplImage* templ)
 						 
 				}
         }
-        // рисуем найденный контур
+        // СЂРёСЃСѓРµРј РЅР°Р№РґРµРЅРЅС‹Р№ РєРѕРЅС‚СѓСЂ
 		IplImage* maxMatchContourImage = cvCreateImage( cvGetSize(original), 8, 3);
 		cvSet(maxMatchContourImage, CV_RGB(255,255,255));
-		cvDrawContours(maxMatchContourImage, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
+		cvDrawContours(maxMatchContourImage, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // СЂРёСЃСѓРµРј РєРѕРЅС‚СѓСЂ
 		double x=0,y=0;
 		
 
@@ -153,56 +134,49 @@ void testMatch(IplImage* original, IplImage* templ)
 		cvNamedWindow( "original with matches", 1 );
 		cvShowImage( "original with matches", rgb);
 
-        // ждём нажатия клавиши
+        // Р¶РґС‘Рј РЅР°Р¶Р°С‚РёСЏ РєР»Р°РІРёС€Рё
         cvWaitKey(0);
 
-        // освобождаем ресурсы
+        // РѕСЃРІРѕР±РѕР¶РґР°РµРј СЂРµСЃСѓСЂСЃС‹
         cvReleaseMemStorage(&storage);
-
         cvReleaseImage(&src);
-        //cvReleaseImage(&dst);
         cvReleaseImage(&rgb);
         cvReleaseImage(&rgbT);
         cvReleaseImage(&binI);
         cvReleaseImage(&binT);
 
-        // удаляем окна
+        // СѓРґР°Р»СЏРµРј РѕРєРЅР°
         cvDestroyAllWindows();
 }
 
 int main(int argc, char* argv[])
 {
-        IplImage *original=0, *templ=0;
+        IplImage *original=0, *templCircle=0, *templRectangle=0;
 
-        // имя картинки задаётся первым параметром
+        // РёРјСЏ РєР°СЂС‚РёРЅРєРё Р·Р°РґР°С‘С‚СЃСЏ РїРµСЂРІС‹Рј РїР°СЂР°РјРµС‚СЂРѕРј
         char* filename = argc >= 2 ? argv[1] : "D:\\work\\DiplomApplication2\\DiplomApplication2\\kontur6.png";
-        // получаем картинку
+        // РїРѕР»СѓС‡Р°РµРј РєР°СЂС‚РёРЅРєСѓ
         original = cvLoadImage(filename, 0);
 
         printf("[i] image: %s\n", filename);
         assert( original != 0 );
 
-        // имя шаблона задаётся вторым параметром
+        // РёРјСЏ С€Р°Р±Р»РѕРЅР° Р·Р°РґР°С‘С‚СЃСЏ РІС‚РѕСЂС‹Рј РїР°СЂР°РјРµС‚СЂРѕРј
         char* filename2 = argc >= 3 ? argv[2] : "D:\\work\\DiplomApplication2\\DiplomApplication2\\kontur0.png";
-        // получаем картинку 
-        templ = cvLoadImage(filename2, 0);
+        // РїРѕР»СѓС‡Р°РµРј РєР°СЂС‚РёРЅРєСѓ 
+        templCircle = cvLoadImage(filename2, 0);
 
         printf("[i] template: %s\n", filename2);
-        assert( templ != 0 );
+        assert( templCircle != 0 );
 
-         /*покажем изображения*/
-        /*cvNamedWindow( "original", 1 );
-        cvShowImage( "original", original );
-        cvNamedWindow( "template", 1 );
-        cvShowImage( "template", templ );*/
 
-        // сравнение
-        testMatch(original, templ);
+        // СЃСЂР°РІРЅРµРЅРёРµ
+        testMatch(original, templCircle);
 
-        // освобождаем ресурсы
+        // РѕСЃРІРѕР±РѕР¶РґР°РµРј СЂРµСЃСѓСЂСЃС‹
         cvReleaseImage(&original);
-        cvReleaseImage(&templ);
-        // удаляем окна
+        cvReleaseImage(&templCircle);
+        // СѓРґР°Р»СЏРµРј РѕРєРЅР°
         cvDestroyAllWindows();
         return 0;
 }
