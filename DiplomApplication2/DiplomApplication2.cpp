@@ -4,6 +4,11 @@
 #include <highgui.h>
 #include <stdlib.h>
 #include <stdio.h>
+//#include "opencv2/highgui/highgui.hpp"
+//#include "opencv2/imgproc/imgproc.hpp"
+
+using namespace cv;
+using namespace std;
 
 // сравнение объектов по моментам их контуров 
 //templ - образец, original - набор фигур
@@ -11,6 +16,14 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 {
         assert(original!=0);
         assert(templ!=0);
+
+		CvScalar target_color[4] = 
+		{ // in BGR order
+			{{   0,   0, 255,   0 }},  // red
+			{{   0, 255,   0,   0 }},  // green
+			{{ 255,   0,   0,   0 }},  // blue
+			{{   0, 255, 255,   0 }}   // yellow
+		};
 
         printf("[i] test cvMatchShapes()\n");
 
@@ -85,21 +98,22 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
         }
 
 		// находим самый длинный контур Прямоугольника
+
 		cvFindContours( binRectangle, storage, &contoursRectangle, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE , cvPoint(0,0));
         CvSeq* seqRectangle=0;
         double perimRectangle = 0;
 
-		        if(contoursRectangle!=0){
-					for(CvSeq* seq0 = contoursRectangle;seq0!=0;seq0 = seq0->h_next)
-					{
-                        double perim = cvContourPerimeter(seq0);
-                        if(perim>perimRectangle){
-                                perimRectangle = perim;
-                                seqRectangle = seq0;
-                        }
-                        cvDrawContours(rgbRectangle, seqRectangle, CV_RGB(255,216,0), CV_RGB(0,0,250), 0, 1, 8); 
-					}
-        }
+		if(contoursRectangle!=0){
+			for(CvSeq* seq0 = contoursRectangle;seq0!=0;seq0 = seq0->h_next)
+			{
+                double perim = cvContourPerimeter(seq0);
+                if(perim>perimRectangle){
+                        perimRectangle = perim;
+                        seqRectangle = seq0;
+                }
+                cvDrawContours(rgbRectangle, seqRectangle, CV_RGB(255,216,0), CV_RGB(0,0,250), 0, 1, 8); 
+			}
+		}
 
 		
 				
@@ -153,7 +167,15 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		}
 
 		printf("radius = %d centerX = %d centerY = %d", (xmax - xmin)/2, xmin+(xmax-xmin)/2, ymin+(ymax-ymin)/2);
-		
+
+		int radius = 15;
+		cvCircle(maxMatchContourImage,
+				cvPoint((int)(xmin+(xmax-xmin)/2),(int)(ymin+(ymax-ymin)/2)),
+				(xmax - xmin)/2,
+				target_color[1]);
+
+
+
         cvNamedWindow( "maxMatchContourCircle", 1 );
 		cvShowImage( "maxMatchContourCircle", maxMatchContourImage);
 		cvNamedWindow( "original with matches circle", 1 );
@@ -169,7 +191,6 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		i=0;
 		IplImage* matchesRectangle = cvCreateImage( cvGetSize(original), 8, 3);
 		cvConvertImage(src, matchesRectangle, CV_GRAY2BGR);
-		//cvSet(matchesRectangle, CV_RGB(255,255,255));
         if(contoursI!=0){
                 // поиск лучшего совпадения контуров по их моментам 
                 for(CvSeq* seq0 = contoursI;seq0!=0;seq0 = seq0->h_next){
@@ -200,11 +221,39 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		cvDrawContours(maxMatchContourImage, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
 		x=0,y=0;
 
+
 		cvNamedWindow( "maxMatchContourRectangle", 1 );
 		cvShowImage( "maxMatchContourRectangle", maxMatchContourImage);
 		cvNamedWindow( "original with matches rectangle", 1 );
 		cvShowImage( "original with matches rectangle", matchesRectangle);
 
+		//найдём углы детектором Харриса
+		/// Параметры детектора:
+		int blockSize = 2;
+		int apertureSize = 3;
+		double k = 0.04;
+
+		IplImage* binMaxMatchContourImage = cvCreateImage( cvGetSize(maxMatchContourImage), 8, 1);
+		IplImage* afterHarrisImage = cvCreateImage( cvGetSize(maxMatchContourImage), 8, 1);
+		
+		cvCanny(maxMatchContourImage, binMaxMatchContourImage, 50, 200);
+		const int MAX_CORNERS = 15;
+		CvPoint2D32f corners[MAX_CORNERS] = {0}; 
+		CvArr* temp_image; 
+		int maxCornersToFind = 15;
+		cvGoodFeaturesToTrack(binMaxMatchContourImage, afterHarrisImage, temp_image, corners, &maxCornersToFind, 0.01, 1);
+		
+		//нарисуем круги вокруг углов
+		for( int i = 0; i < MAX_CORNERS; i++) {
+			int radius = 15;
+			cvCircle(maxMatchContourImage,
+					cvPoint((int)(corners[i].x + 0.5f),(int)(corners[i].y + 0.5f)),
+					radius,
+					target_color[1]);
+		}
+
+		cvNamedWindow( "after Harris Image", 1 );
+		cvShowImage( "after Harris Image", maxMatchContourImage);
 
 
 
