@@ -147,9 +147,9 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 				}
         }
         // рисуем найденный контур
-		IplImage* maxMatchContourImage = cvCreateImage( cvGetSize(original), 8, 3);
-		cvSet(maxMatchContourImage, CV_RGB(255,255,255));
-		cvDrawContours(maxMatchContourImage, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
+		IplImage* maxMatchContourImageCircle = cvCreateImage( cvGetSize(original), 8, 3);
+		cvSet(maxMatchContourImageCircle, CV_RGB(255,255,255));
+		cvDrawContours(maxMatchContourImageCircle, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
 		double x=0,y=0;
 		
 
@@ -169,15 +169,15 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		printf("radius = %d centerX = %d centerY = %d", (xmax - xmin)/2, xmin+(xmax-xmin)/2, ymin+(ymax-ymin)/2);
 
 		int radius = 15;
-		cvCircle(maxMatchContourImage,
+		cvCircle(maxMatchContourImageCircle,
 				cvPoint((int)(xmin+(xmax-xmin)/2),(int)(ymin+(ymax-ymin)/2)),
 				(xmax - xmin)/2,
-				target_color[1]);
+				target_color[1],2);
 
 
 
         cvNamedWindow( "maxMatchContourCircle", 1 );
-		cvShowImage( "maxMatchContourCircle", maxMatchContourImage);
+		cvShowImage( "maxMatchContourCircle", maxMatchContourImageCircle);
 		cvNamedWindow( "original with matches circle", 1 );
 		cvShowImage( "original with matches circle", rgb);
 
@@ -216,14 +216,14 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 				}
         }
         // рисуем найденный контур
-		maxMatchContourImage = cvCreateImage( cvGetSize(original), 8, 3);
-		cvSet(maxMatchContourImage, CV_RGB(255,255,255));
-		cvDrawContours(maxMatchContourImage, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
+		IplImage* maxMatchContourImageRectangle = cvCreateImage( cvGetSize(original), 8, 3);
+		cvSet(maxMatchContourImageRectangle, CV_RGB(255,255,255));
+		cvDrawContours(maxMatchContourImageRectangle, seqM, CV_RGB(250,0,0), CV_RGB(250,0,0), 0, 2, 8); // рисуем контур
 		x=0,y=0;
 
 
 		cvNamedWindow( "maxMatchContourRectangle", 1 );
-		cvShowImage( "maxMatchContourRectangle", maxMatchContourImage);
+		cvShowImage( "maxMatchContourRectangle", maxMatchContourImageRectangle);
 		cvNamedWindow( "original with matches rectangle", 1 );
 		cvShowImage( "original with matches rectangle", matchesRectangle);
 
@@ -233,10 +233,10 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		int apertureSize = 3;
 		double k = 0.04;
 
-		IplImage* binMaxMatchContourImage = cvCreateImage( cvGetSize(maxMatchContourImage), 8, 1);
-		IplImage* afterHarrisImage = cvCreateImage( cvGetSize(maxMatchContourImage), 8, 1);
+		IplImage* binMaxMatchContourImage = cvCreateImage( cvGetSize(maxMatchContourImageRectangle), 8, 1);
+		IplImage* afterHarrisImage = cvCreateImage( cvGetSize(maxMatchContourImageRectangle), 8, 1);
 		
-		cvCanny(maxMatchContourImage, binMaxMatchContourImage, 50, 200);
+		cvCanny(maxMatchContourImageRectangle, binMaxMatchContourImage, 50, 200);
 		const int MAX_CORNERS = 15;
 		CvPoint2D32f corners[MAX_CORNERS] = {0}; 
 		CvArr* temp_image; 
@@ -246,14 +246,14 @@ void testMatch(IplImage* original, IplImage* templCircle, IplImage* templRectang
 		//нарисуем круги вокруг углов
 		for( int i = 0; i < MAX_CORNERS; i++) {
 			int radius = 15;
-			cvCircle(maxMatchContourImage,
+			cvCircle(maxMatchContourImageRectangle,
 					cvPoint((int)(corners[i].x + 0.5f),(int)(corners[i].y + 0.5f)),
 					radius,
-					target_color[1]);
+					target_color[1],1);
 		}
 
 		cvNamedWindow( "after Harris Image", 1 );
-		cvShowImage( "after Harris Image", maxMatchContourImage);
+		cvShowImage( "after Harris Image", maxMatchContourImageRectangle);
 
 
 
